@@ -54,6 +54,10 @@ class BlobBasicSamples():
             print('\n\n* Basic page blob operations *\n')
             self.basic_pageblob_operations(account)
             
+            # Snapshot
+            print('\n\n* Snapshot sample *\n')
+            self.basic_snapshot(account)
+
             if (config.IS_EMULATED == False):
                 # Append blob basics
                 # Append blob is not yet supported in the Emulator
@@ -72,7 +76,7 @@ class BlobBasicSamples():
     
     # Runs basic block blob samples for Azure Storage Blob service.
     # Input Arguments:
-    # container_name - Container name to use for running the samples
+    # account - CloudStorageAccount to use for running the samples
     def basic_blockblob_operations(self, account):
         blob_name1 = "blob1"
         blob_name2 = "blob2"
@@ -103,7 +107,7 @@ class BlobBasicSamples():
                 print('\tBlob Name: ' + blob.name)
             
             # Download the blob
-            print('4. Download the blob');
+            print('4. Download the blob')
             blockblob_service.get_blob_to_path(container_name, blob_name1, os.path.join(os.path.dirname(__file__), file_to_upload + '.copy.png'))
             blockblob_service.get_blob_to_path(container_name, blob_name2, os.path.join(os.path.dirname(__file__), 'blob2.copy.txt'))
             
@@ -161,7 +165,7 @@ class BlobBasicSamples():
      
     # Runs basic append blob samples for Azure Storage Blob service.
     # Input Arguments:
-    # container_name - Container name to use for running the samples
+    # account - CloudStorageAccount to use for running the samples
     def basic_appendblob_operations(self, account):
         file_to_upload = "HelloAppendBlobWorld.txt"
         
@@ -190,7 +194,7 @@ class BlobBasicSamples():
                 print('\tBlob Name: ' + blob.name)
             
             # Read the blob
-            print('5. Read Append blob');
+            print('5. Read Append blob')
             append_blob = appendblob_service.get_blob_to_text(container_name, file_to_upload)
             print(append_blob.content)
             
@@ -202,3 +206,36 @@ class BlobBasicSamples():
             print("7. Delete Container")
             if appendblob_service.exists(container_name):
                 appendblob_service.delete_container(container_name)
+
+
+    # Runs a snapthot sample for Azure Storage Blob service.
+    # Input Arguments:
+    # account - CloudStorageAccount to use for running the samples
+    def basic_snapshot(self, account):
+        blob_name = "blob1"
+        file_to_upload = "HelloWorld.png"
+        
+        # Create a Block Blob Service object
+        blockblob_service = account.create_block_blob_service()
+        container_name = 'blockblobbasicscontainer' + self.random_data.get_random_name(6)
+
+        try:
+            # Create a new container
+            print('1. Create a container with name - ' + container_name)
+            blockblob_service.create_container(container_name)
+                    
+            # Create blobs
+            print('2. Create a blob')
+            # Get full path on drive to file_to_upload by joining the fully qualified directory name and file name on the local drive
+            full_path_to_file = os.path.join(os.path.dirname(__file__), file_to_upload)
+            blockblob_service.create_blob_from_path(container_name, blob_name, full_path_to_file)
+            
+            # Create a read-only snapshot of the blob
+            print('3. Create a snapshot')
+            snapshot = blockblob_service.snapshot_blob(container_name, blob_name)
+           
+        finally:            
+            # Delete the container
+            print("4. Delete Container")
+            if blockblob_service.exists(container_name):
+                blockblob_service.delete_container(container_name)
